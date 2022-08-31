@@ -1,5 +1,8 @@
+
+
 vowel_map = dict()
 vowels = "iyɨʉɯuɪʏʊeøɘɵɤoe̞ø̞əɤ̞o̞ɛœɜɞʌɔæɐaɶäɑɒɝŋ"
+
 
 def vowelize(word):
     ret = []
@@ -8,27 +11,50 @@ def vowelize(word):
         if c in vowels:
             vowelized += c
         else:
-            if vowelized != "": 
+            if vowelized != "":
                 ret.append(vowelized)
             vowelized = ""
     return ret
 
-def find_vowels(search_vowels):
-    ret = []
-    for word, vowels in vowel_map.items():
-        if vowels == search_vowels:
-            ret.append(word)
-    return ret
+
+class Tree:
+    def __init__(self, branches={}, words=[]):
+        self.branches = branches
+        self.words = words
+
+    def find(self, vowelized):
+        if len(vowelized) == 0:
+            return self.words
+        else:
+            if vowelized[0] in self.branches:
+                return self.branches[vowelized[0]].find(vowelized[1:])
+            else:
+                return []
+
+    def insert(self, word, vowelized):
+        if len(vowelized) == 0:
+            self.words.append(word)
+        else:
+            if vowelized[0] in self.branches:
+                self.branches[vowelized[0]].insert(word, vowelized[1:])
+                return
+            node = Tree({}, [])
+            node.insert(word, vowelized[1:])
+            self.branches[vowelized[0]] = node
+
+
+vowel_tree = Tree()
 
 with open("data/en_Us.csv", encoding="utf-8") as f:
     data = f.read().splitlines()
-    
+
     for i in data:
         d = i.split(",")
         word = d[0]
         ipa = d[1]
-        
+
         vowel_map[word] = vowelize(ipa)
+        vowel_tree.insert(word, vowelize(ipa))
 
 
 def d(word):
@@ -38,10 +64,11 @@ def d(word):
         if c in vowels:
             vowelized += c
         else:
-            if vowelized != "": 
+            if vowelized != "":
                 ret.append(vowelized)
             vowelized = ""
     return ret
+
 
 class Path:
     remaining = []
@@ -61,21 +88,26 @@ def search(vowels):
             print(" ".join(v.traversed))
         # find all edges
         edges = []
-        for word, search_vowels in vowel_map.items():
-            if len(search_vowels) > len(v.remaining):
-                continue
-            works = True
-            for i, k in enumerate(search_vowels):
-                if k != v.remaining[i]:
-                    works = False
-                    break
-            if works:
-                t = v.traversed.copy()
-                t.append(word)
-                edges.append(Path(v.remaining[len(search_vowels):], t))
+        s = v.remaining.copy()
+        while len(s) != 0:
+            to_add = vowel_tree.find(s)
+            for i in to_add:
+                trav = v.traversed.copy()
+                trav.append(i)
+                edges.append(Path(v.remaining[len(s):], trav))
+            s.pop()
         for e in edges:
-            # print(e.traversed, e.remaining)
+            # print(e.remaining, e.traversed)
             queue.append(e)
+
+
+def find_vowels(search_vowels):
+    ret = []
+    for word, vowels in vowel_map.items():
+        if vowels == search_vowels:
+            ret.append(word)
+    return ret
+
 
 query = input()
 query_list = []
