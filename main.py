@@ -76,32 +76,7 @@ class Path:
         self.remaining = remaining
         self.traversed = traversed
 
-
-def search(vowels):
-    queue = []
-    queue.append(Path(vowels))
-    while len(queue) != 0:
-        v = queue.pop(0)
-        if len(v.remaining) == 0:
-            print(" ".join(v.traversed))
-        # find all edges
-        edges = []
-        s = v.remaining.copy()
-        while len(s) != 0:
-            to_add = vowel_tree.find(s)
-            for i in to_add:
-                trav = v.traversed.copy()
-                trav.append(i)
-                edges.append(Path(v.remaining[len(s):], trav))
-            s.pop()
-        for e in edges:
-            # print(e.remaining, e.traversed)
-            queue.append(e)
-
-
-
 def better_search(vowels):
-    searched = {}
     ret = []
     queue = []
     queue.append(Path(vowels))
@@ -109,9 +84,6 @@ def better_search(vowels):
         v = queue.pop(0)
         if len(v.remaining) == 0:
             ret.append(v.traversed)
-            # for t in v.traversed:
-            #     print(t[0])
-            # print("----")
         # find all edges
         edges = []
         s = v.remaining.copy()
@@ -122,18 +94,10 @@ def better_search(vowels):
                 continue
             trav = v.traversed.copy()
             trav.append(to_add)
-            # searched[v.remaining] = Path(v.remaining[len(s):], trav)
             edges.append(Path(v.remaining[len(s):], trav))
             s.pop()
         for e in edges:
             queue.append(e)
-    return ret
-
-def find_vowels(search_vowels):
-    ret = []
-    for word, vowels in vowel_map.items():
-        if vowels == search_vowels:
-            ret.append(word)
     return ret
 
 
@@ -148,11 +112,14 @@ result = better_search(query_list)
 
 print(len(result), "combinations found!")
 
+i = 1
 for t in result:
     out = ""
     for r in t:
-        out += str(len(vowel_map[r[0]])) + " "
-    print(out)
+        out += f"{len(vowel_map[r[0]])} "
+    print(f"{i}. {out}")
+    i += 1
+
 option = int(input("Which combination? ")) - 1
 choose = result[option]
 
