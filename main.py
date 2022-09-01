@@ -1,5 +1,3 @@
-
-
 vowel_map = dict()
 vowels = "iyɨʉɯuɪʏʊeøɘɵɤoe̞ø̞əɤ̞o̞ɛœɜɞʌɔæɐaɶäɑɒɝŋ"
 
@@ -101,6 +99,36 @@ def search(vowels):
             queue.append(e)
 
 
+
+def better_search(vowels):
+    searched = {}
+    ret = []
+    queue = []
+    queue.append(Path(vowels))
+    while len(queue) != 0:
+        v = queue.pop(0)
+        if len(v.remaining) == 0:
+            ret.append(v.traversed)
+            # for t in v.traversed:
+            #     print(t[0])
+            # print("----")
+        # find all edges
+        edges = []
+        s = v.remaining.copy()
+        while len(s) != 0:
+            to_add = vowel_tree.find(s)
+            if len(to_add) == 0:
+                s.pop()
+                continue
+            trav = v.traversed.copy()
+            trav.append(to_add)
+            # searched[v.remaining] = Path(v.remaining[len(s):], trav)
+            edges.append(Path(v.remaining[len(s):], trav))
+            s.pop()
+        for e in edges:
+            queue.append(e)
+    return ret
+
 def find_vowels(search_vowels):
     ret = []
     for word, vowels in vowel_map.items():
@@ -116,4 +144,29 @@ for word in query.split(" "):
     query_list.extend(vowel_map[word])
 
 print("Searching Vowels: ", query_list)
-search(query_list)
+result = better_search(query_list)
+
+print(len(result), "combinations found!")
+
+for t in result:
+    out = ""
+    for r in t:
+        out += str(len(vowel_map[r[0]])) + " "
+    print(out)
+option = int(input("Which combination? ")) - 1
+choose = result[option]
+
+i = 0
+out = ""
+while True:
+    out = ""
+    for t in choose:
+        s = "\t"
+        if i < len(t):
+            s = t[i]
+        out += s + "\t"
+    print(out)
+    i += 1
+    if len(out.strip()) == 0:
+        break
+
